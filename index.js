@@ -1,22 +1,52 @@
-const handleSearch = async (event) => {
-  event.preventDefault();
+const handleSearch = async (evt) => {
+  // CANCELA A AÇÃO DO BOTÃO
+  evt.preventDefault();
 
-  // implemente a consulta a partir daqui
+  // OBTÉM ELEMENTO DE TELA
+  const messageBox = document.getElementById("message");
+  const showList = document.getElementById("shows");
 
-  //// Exemplo de endpoint: https://api.tvmaze.com/search/shows?q=lost
+  // LIMPAR LISTA E A MENSAGEM
+  messageBox.innerHTML = "";
+  showList.innerHTML = "";
 
-  //// Elementos de leiaute importantes:
+  // OBTENDO O VALOR DIGITADO
+  const textToSearch = document.getElementById("query").value;
 
-  //  #message: use para exibir mensagens aos usuário, por exemplo:
+  // MONTANDO A URL DA API
+  const url = `https://api.tvmaze.com/search/shows?q=${textToSearch}`;
 
-  const message = document.querySelector('#message');
-  message.innerHTML = 'exercício ainda não resolvido.';
+  // CHAMAR A API
+  const response = await fetch(url);
 
-  //  #shows: conterá os shows, cada um em um <li>, por exemplo:
-  // <li>
-  //   <img class="poster" src="https://static.tvmaze.com/uploads/images/medium_portrait/0/1389.jpg" />
-  //   <span class="show-name">Lost</span>
-  // </li>
+  // TESTAR SE NÃO TEVE SUCESSO
+  if (!response.ok) {
+    messageBox.innerHTML = "Failed do fetch results.";
+    return;
+  }
+
+  // LER O RESULTADO
+  const showsFetched = await response.json();
+
+  // SABER SE NÃO VEIO NENHUM SHOW
+  if (showsFetched.length === 0) {
+    messageBox.innerHTML = "Not found.";
+    return;
+  }
+
+  // EXIBIR OS SHOWS RETORNADOS
+  showsFetched.forEach((item) => {
+    const showName = item?.show?.name;
+    const showPictureUrl = item?.show?.image?.medium || '';
+
+    // EXIBIR O NOME E A IMAGEM
+    showList.insertAdjacentHTML("beforeend", `
+      <li>
+        <img class="poster" src="${showPictureUrl}" />
+        <span class="show-name">${showName}</span>
+      </li>
+    `);
+  });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
